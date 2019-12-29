@@ -1,6 +1,6 @@
-FROM alpine:3.10
+FROM alpine:3.11
 
-LABEL maintainer="docker@upshift.fr"
+LABEL maintainer="docker-remove@upshift.fr"
 
 ENV DOLI_VERSION develop
 
