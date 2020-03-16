@@ -2,8 +2,6 @@
 
 Docker image for [Dolibarr ERP](https://www.dolibarr.org).
 
-Based on [Monogramm/docker-dolibarr](https://github.com/Monogramm/docker-dolibarr)
-
 Provides full database configuration, production mode, HTTPS enforcer (SSL must be provided by reverse proxy), handles upgrades, and so on...
 
 ## Usage
@@ -16,7 +14,7 @@ To start the container type:
 # docker run -d -p 8080:80 --link my-db:db upshift/dolibarr
 ```
 
-Now you can access Dolibarr at http://localhost:8080/ from your host system. The Dolibarr setup wizard should appear on first run, and will guide you for initial configuration.
+Now you can access Dolibarr at http://localhost:8080/ from your host system. Default password for the 'admin' user is 'dolibarr'.
 
 ## Persistent data
 
@@ -208,6 +206,17 @@ Examples:
 DOLI_ADMIN_LOGIN=admin
 ```
 
+### DOLI_ADMIN_PASSWORD
+
+*Default value*: `dolibarr`
+
+This parameter contains the admin's password used in the first install.
+
+Examples:
+```
+DOLI_ADMIN_PASSWORD=dolibarr
+```
+
 ### DOLI_MODULES
 
 *Default value*: 
@@ -394,29 +403,16 @@ DOLI_NO_CSRF_CHECK=0
 DOLI_NO_CSRF_CHECK=1
 ```
 
-### PHP_INI_DATE_TIMEZONE
+### PHP_INI_*
 
-*Default value*: `UTC`
+Replace or add configuration in php.ini file.
 
-Default timezone on PHP.
-
-### PHP_MEMORY_LIMIT
-
-*Default value*: `256M`
-
-Default memory limit on PHP.
-
-### PHP_MAX_UPLOAD
-
-*Default value*: `20M`
-
-Default max upload size on PHP.
-
-### PHP_MAX_EXECUTION_TIME
-
-*Default value*: `300`
-
-Default max execution time (in seconds) on PHP.
+Examples:
+```
+ENV PHP_INI_upload_max_filesize=50M
+ENV PHP_INI_memory_limit=256M
+ENV PHP_INI_max_execution_time=60
+```
 
 # Running this image with docker-compose
 
@@ -425,27 +421,29 @@ This example will use the a [MariaDB](https://hub.docker.com/_/mariadb/) contain
 Create `docker-compose.yml` file as following:
 
 ```yml
-version: '2'
+version: '3'
 
 volumes:
   dolibarr_html:
   dolibarr_docs:
   dolibarr_db:
 
-mariadb:
+services:
+
+  mariadb:
     image: mariadb:latest
     restart: always
-    command: --character_set_client=utf8 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --character-set-client-handshake=FALSE
+    command: --character_set_client=utf8 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - dolibarr_db:/var/lib/mysql
     environment:
-        - "MYSQL_ROOT_PASSWORD="
-        - "MYSQL_PASSWORD="
         - "MYSQL_DATABASE=dolibarr"
         - "MYSQL_USER=dolibarr"
+        - "MYSQL_PASSWORD=dolibarr"
+        - "MYSQL_RANDOM_ROOT_PASSWORD=yes"
 
-dolibarr:
-    image: upshift/dolibarr
+  dolibarr:
+    image: upshift/dolibarr:latest
     restart: always
     depends_on:
         - mariadb
@@ -455,7 +453,7 @@ dolibarr:
         - "DOLI_DB_HOST=mariadb"
         - "DOLI_DB_NAME=dolibarr"
         - "DOLI_DB_USER=dolibarr"
-        - "DOLI_DB_PASSWORD="
+        - "DOLI_DB_PASSWORD=dolibarr"
     volumes:
         - dolibarr_html:/var/www/html
         - dolibarr_docs:/var/www/documents
