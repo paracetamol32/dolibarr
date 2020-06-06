@@ -18,11 +18,6 @@ function run_as() {
 	fi
 }
 
-if [ ! -d /var/www/documents ]; then
-	mkdir -p /var/www/documents
-fi
-chown -R apache:root /var/www/documents
-
 if [ ! -f /etc/php7/php.ini ]; then
 	touch /etc/php7/php.ini
 fi
@@ -37,6 +32,12 @@ do
 		echo "${X_PHP_VAR} = ${!X_PHP_INI}" >>/etc/php7/php.ini
 	fi
 done
+
+if [ ! -d /var/www/documents ]; then
+	mkdir -p /var/www/documents
+fi
+chown -R apache:root /var/www/documents
+chmod -R u+w /var/www/documents
 
 if [ ! -d /var/www/html/conf ]; then
 	mkdir -p /var/www/html/conf
