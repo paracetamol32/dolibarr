@@ -143,9 +143,12 @@ if version_greater "$image_version" "$installed_version"; then
 		base_version=(${installed_version//./ })
 		target_version=(${image_version//./ })
 
+		# Call upgrade scripts
+		chmod 640 /var/www/html/conf/conf.php
 		run_as "cd /var/www/html/install/ && php upgrade.php ${base_version[0]}.${base_version[1]}.0 ${target_version[0]}.${target_version[1]}.0"
 		run_as "cd /var/www/html/install/ && php upgrade2.php ${base_version[0]}.${base_version[1]}.0 ${target_version[0]}.${target_version[1]}.0"
 		run_as "cd /var/www/html/install/ && php step5.php ${base_version[0]}.${base_version[1]}.0 ${target_version[0]}.${target_version[1]}.0"
+		chmod 440 /var/www/html/conf/conf.php
 
 	elif [ ! -f /var/www/documents/install.lock ]; then
 
