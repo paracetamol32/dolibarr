@@ -111,11 +111,7 @@ fi
 # Initialize image
 if version_greater "$image_version" "$installed_version"; then
 	echo "Dolibarr initialization..."
-	if [[ $EUID -eq 0 ]]; then
-		rsync_options="-rlDog --chown apache:root"
-	else
-		rsync_options="-rlD"
-	fi
+	rsync_options="--verbose --archive --chmod a-w --chown apache:root"
 
 	rsync $rsync_options --delete --exclude /conf/ --exclude /custom/ --exclude /theme/ /usr/src/dolibarr/htdocs/ /var/www/html/
 
@@ -144,7 +140,7 @@ if version_greater "$image_version" "$installed_version"; then
 		target_version=(${image_version//./ })
 
 		# Call upgrade scripts
-		chmod 640 /var/www/html/conf/conf.php
+		chmod 660 /var/www/html/conf/conf.php
 		run_as "cd /var/www/html/install/ && php upgrade.php ${base_version[0]}.${base_version[1]}.0 ${target_version[0]}.${target_version[1]}.0"
 		run_as "cd /var/www/html/install/ && php upgrade2.php ${base_version[0]}.${base_version[1]}.0 ${target_version[0]}.${target_version[1]}.0"
 		run_as "cd /var/www/html/install/ && php step5.php ${base_version[0]}.${base_version[1]}.0 ${target_version[0]}.${target_version[1]}.0"
@@ -178,7 +174,7 @@ if version_greater "$image_version" "$installed_version"; then
 			EOF
 
 		# Call install scripts
-		chmod 640 /var/www/html/conf/conf.php
+		chmod 660 /var/www/html/conf/conf.php
 		run_as "cd /var/www/html/install/ && php step2.php set"
 		run_as "cd /var/www/html/install/ && php step5.php 0 0 ${LANG:-fr_FR} set ${DOLI_ADMIN_LOGIN} ${DOLI_ADMIN_PASSWORD} ${DOLI_ADMIN_PASSWORD}"
 		chmod 440 /var/www/html/conf/conf.php
