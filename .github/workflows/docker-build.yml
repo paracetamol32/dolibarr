@@ -42,7 +42,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: paracetamol32/dolibarr:${{ steps.vars.outputs.tag }},paracetamol32/nginxtest:latest
+          tags: paracetamol32/dolibarr:${{ steps.vars.outputs.tag }},paracetamol32/dolibarr:latest
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
