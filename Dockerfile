@@ -1,4 +1,4 @@
-FROM alpine:3.12
+FROM alpine:3.13
 
 LABEL maintainer="docker@upshift.fr"
 
@@ -10,29 +10,29 @@ RUN set -eux; \
 		openssl \
 		rsync \
 		apache2 \
-		php7-apache2 \
-		php7-session \
-		php7-mysqli \
-		php7-pgsql \
-		php7-ldap \
-		php7-mcrypt \
-		php7-openssl \
-		php7-mbstring \
-		php7-intl \
-		php7-gd \
-		php7-imagick \
-		php7-soap \
-		php7-curl \
-		php7-calendar \
-		php7-json \
-		php7-xml \
-		php7-xmlreader \
-		php7-xmlwriter \
-		php7-zip \
-		php7-tokenizer \
-		php7-simplexml \
-		php7-opcache \
-		php7 \
+		php8-apache2 \
+		php8-session \
+		php8-mysqli \
+		php8-pgsql \
+		php8-ldap \
+		php8-mcrypt \
+		php8-openssl \
+		php8-mbstring \
+		php8-intl \
+		php8-gd \
+		php8-imagick \
+		php8-soap \
+		php8-curl \
+		php8-calendar \
+		php8-json \
+		php8-xml \
+		php8-xmlreader \
+		php8-xmlwriter \
+		php8-zip \
+		php8-tokenizer \
+		php8-simplexml \
+		php8-opcache \
+		php8 \
 		mariadb-client \
 		postgresql-client \
 		unzip \
@@ -42,7 +42,11 @@ RUN set -eux; \
 	rm -rf /var/www/localhost/htdocs; \
 	ln -s /var/www/html /var/www/localhost/htdocs
 
+<<<<<<< HEAD
 ENV DOLI_VERSION 16.0.3
+=======
+ENV DOLI_VERSION 17.0.0
+>>>>>>> 775880e (17.0.0)
 
 ENV DOLI_DB_TYPE mysqli
 ENV DOLI_DB_HOST db
