@@ -42,11 +42,7 @@ RUN set -eux; \
 	rm -rf /var/www/localhost/htdocs; \
 	ln -s /var/www/html /var/www/localhost/htdocs
 
-<<<<<<< HEAD
-ENV DOLI_VERSION 16.0.3
-=======
 ENV DOLI_VERSION 17.0.0
->>>>>>> 775880e (17.0.0)
 
 ENV DOLI_DB_TYPE mysqli
 ENV DOLI_DB_HOST db
