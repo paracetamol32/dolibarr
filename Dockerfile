@@ -1,4 +1,4 @@
-FROM alpine:3.12
+FROM alpine:3.16
 
 LABEL maintainer="docker@upshift.fr"
 
@@ -10,33 +10,62 @@ RUN set -eux; \
 		openssl \
 		rsync \
 		apache2 \
-		php7-apache2 \
-		php7-session \
-		php7-mysqli \
-		php7-pgsql \
-		php7-ldap \
-		php7-mcrypt \
-		php7-openssl \
-		php7-mbstring \
-		php7-intl \
-		php7-gd \
-		php7-imagick \
-		php7-soap \
-		php7-curl \
-		php7-calendar \
-		php7-json \
-		php7-xml \
-		php7-xmlreader \
-		php7-xmlwriter \
-		php7-zip \
-		php7-tokenizer \
-		php7-simplexml \
-		php7-opcache \
-		php7 \
+		php8-apache2 \
+		php8-session \
+		php8-mysqli \
+		php8-pgsql \
+		php8-ldap \
+		php8-pecl-mcrypt \
+		php8-openssl \
+		php8-mbstring \
+		php8-intl \
+		php8-gd \
+		php8-imap \
+		php8-pecl-imagick \
+		php8-soap \
+		php8-curl \
+		php8-calendar \
+		php8-json \
+		php8-xml \
+		php8-xmlreader \
+		php8-xmlwriter \
+		php8-zip \
+		php8-tokenizer \
+		php8-simplexml \
+		php8-opcache \
+		php8-pdo \
+		php8-pdo_mysql \
+		php8-pdo_pgsql \
+		php8-pdo_sqlite \
+		php8-ctype \
+		php8-fileinfo \
+		php8 \
 		mariadb-client \
 		postgresql-client \
 		unzip \
 		tzdata \
+	; \
+	sed -i \
+		-e 's%^;*allow_url_fopen\s*=.*%allow_url_fopen = Off%' \
+		-e 's%^;*disable_functions\s*=.*%disable_functions = pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,passthru,shell_exec,system,proc_open,popen%' \
+		-e 's%^;*max_execution_time\s*=.*%max_execution_time = 60%' \
+		-e 's%^;*memory_limit\s*=.*%memory_limit = 256M%' \
+		-e 's%^;*open_basedir\s*=.*%open_basedir = /var/www/localhost/htdocs:/var/www/documents:/var/www/run:/tmp%' \
+		-e 's%^;*post_max_size\s*=.*%post_max_size = 50M%' \
+		-e 's%^;*session\.cookie_samesite\s*=.*%session.cookie_samesite = Lax%' \
+		-e 's%^;*session\.save_path\s*=.*%session.save_path = /var/www/run%' \
+		-e 's%^;*session\.use_strict_mode\s*=.*%session.use_strict_mode = 1%' \
+		-e 's%^;*upload_max_filesize\s*=.*%upload_max_filesize = 50M%' \
+		/etc/php8/php.ini \
+	; \
+	sed -i \
+		-e 's%^#*LoadModule deflate_module %LoadModule deflate_module %' \
+		-e 's%^LoadModule autoindex_module %#LoadModule autoindex_module %' \
+		/etc/apache2/httpd.conf \
+	; \
+	echo \
+		'AddOutputFilterByType DEFLATE text/html text/plain text/json text/xml text/css text/javascript application/javascript' \
+		> /etc/apache2/conf.d/deflate.conf \
 	; \
 	install -d -o apache -g root -m 0750 /var/www/html; \
 	rm -rf /var/www/localhost/htdocs; \
@@ -80,19 +109,13 @@ ENV DOLI_HTTPS 0
 ENV DOLI_PROD 0
 ENV DOLI_NO_CSRF_CHECK 0
 
-ENV PHP_INI_upload_max_filesize=50M
-ENV PHP_INI_memory_limit=256M
-ENV PHP_INI_max_execution_time=60
-
 ENV LANG fr_FR
 
 VOLUME /var/www/html
 VOLUME /var/www/documents
 
-# Get Dolibarr
-ADD https://github.com/Dolibarr/dolibarr/archive/${DOLI_VERSION}.zip /tmp/dolibarr.zip
-#COPY /dolibarr-${DOLI_VERSION}.zip /tmp/dolibarr.zip
 RUN set -eux; \
+	wget https://github.com/Dolibarr/dolibarr/archive/${DOLI_VERSION}.zip -O /tmp/dolibarr.zip; \
 	unzip -q /tmp/dolibarr.zip -d /tmp/dolibarr; \
 	rm -f /tmp/dolibarr.zip; \
 	mkdir -p /usr/src/dolibarr; \
