@@ -18,18 +18,18 @@ function run_as() {
 	fi
 }
 
-if [ ! -f /etc/php8/php.ini ]; then
-	touch /etc/php8/php.ini
+if [ ! -f /etc/php7/php.ini ]; then
+	touch /etc/php7/php.ini
 fi
 
 for X_PHP_INI in ${!PHP_INI_@}
 do
 	X_PHP_VAR=${X_PHP_INI##PHP_INI_}
-	if grep -q "^;*\s*${X_PHP_VAR}\s*=" /etc/php8/php.ini
+	if grep -q "^;*\s*${X_PHP_VAR}\s*=" /etc/php7/php.ini
 	then
-		sed -i "s/^;*\s*${X_PHP_VAR}\s*=.*/${X_PHP_VAR} = ${!X_PHP_INI}/" /etc/php8/php.ini
+		sed -i "s/^;*\s*${X_PHP_VAR}\s*=.*/${X_PHP_VAR} = ${!X_PHP_INI}/" /etc/php7/php.ini
 	else
-		echo "${X_PHP_VAR} = ${!X_PHP_INI}" >>/etc/php8/php.ini
+		echo "${X_PHP_VAR} = ${!X_PHP_INI}" >>/etc/php7/php.ini
 	fi
 done
 
@@ -37,16 +37,13 @@ if [ ! -d /var/www/documents ]; then
 	mkdir -p /var/www/documents
 fi
 chown -R apache:root /var/www/documents
-chmod -R ug+w /var/www/documents
+chmod -R u+w /var/www/documents
 
 if [ ! -d /var/www/html/conf ]; then
 	mkdir -p /var/www/html/conf
 fi
 chown apache:root /var/www/html/conf
 chmod 550 /var/www/html/conf
-
-chown apache:root /run/apache2
-chmod 770 /run/apache2
 
 # Create a default config
 if [ ! -f /var/www/html/conf/conf.php ]; then
@@ -190,9 +187,6 @@ if version_greater "$image_version" "$installed_version"; then
 	chown apache:apache /var/www/documents/install.lock
 	chmod 440 /var/www/documents/install.lock
 fi
-
-chown apache:root /var/www/html/custom
-chmod 775 /var/www/html/custom
 
 if [ -f /var/www/documents/install.lock ]; then
 	echo $image_version > /var/www/documents/install.version
