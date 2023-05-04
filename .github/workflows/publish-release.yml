@@ -10,7 +10,7 @@ jobs:
       - name: Create GitHub release
         uses: Roang-zero1/github-create-release-action@master
         with:
-          version_regex: ^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+
+          version_regex: ^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\S*
           prerelease_regex: "^3\\.[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
