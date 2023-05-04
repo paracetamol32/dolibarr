@@ -3,7 +3,7 @@ name: Container CI
 on:
   push:
     tags:
-      - '^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\S*'
+      - ^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\S*
 
 jobs:
   docker:
