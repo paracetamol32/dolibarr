@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - '^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+\S*'
+      - '*'
 name: Publish Release
 jobs:
   release:
