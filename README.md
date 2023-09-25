@@ -73,6 +73,7 @@ DOLI_DB_TYPE=mysqli
 DOLI_DB_TYPE=pgsql
 ```
 
+
 ### DOLI_DB_HOST
 
 *Default value*: `localhost`
