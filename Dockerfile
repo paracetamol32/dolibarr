@@ -1,6 +1,6 @@
 FROM alpine:3.21
 
-LABEL maintainer="docker@upshift.fr"
+LABEL maintainer="dm@vecteur.it"
 
 RUN set -eux; \
     apk add --no-cache \
