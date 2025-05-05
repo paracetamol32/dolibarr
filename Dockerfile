@@ -1,75 +1,70 @@
-FROM alpine:3.17
+FROM alpine:3.21
 
 LABEL maintainer="docker@upshift.fr"
 
 RUN set -eux; \
-	# install needed packages
-	# see https://wiki.dolibarr.org/index.php/Dependencies_and_external_libraries
-	apk add --no-cache \
-		bash \
-		openssl \
-		rsync \
-		apache2 \
-		php8-apache2 \
-		php8-session \
-		php8-mysqli \
-		php8-pgsql \
-		php8-ldap \
-		php8-pecl-mcrypt \
-		php8-openssl \
-		php8-mbstring \
-		php8-intl \
-		php8-gd \
-		php8-imap \
-		php8-pecl-imagick \
-		php8-soap \
-		php8-curl \
-		php8-calendar \
-		php8-json \
-		php8-xml \
-		php8-xmlreader \
-		php8-xmlwriter \
-		php8-zip \
-		php8-tokenizer \
-		php8-simplexml \
-		php8-opcache \
-		php8-pdo \
-		php8-pdo_mysql \
-		php8-pdo_pgsql \
-		php8-pdo_sqlite \
-		php8-ctype \
-		php8-fileinfo \
-		php8 \
-		mariadb-client \
-		postgresql-client \
-		unzip \
-		tzdata \
-	; \
-	sed -i \
-		-e 's%^;*allow_url_fopen\s*=.*%allow_url_fopen = On%' \
-		-e 's%^;*disable_functions\s*=.*%disable_functions = pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,passthru,shell_exec,system,proc_open,popen%' \
-		-e 's%^;*max_execution_time\s*=.*%max_execution_time = 60%' \
-		-e 's%^;*memory_limit\s*=.*%memory_limit = 256M%' \
-		-e 's%^;*open_basedir\s*=.*%open_basedir = /var/www/html:/var/www/localhost/htdocs:/var/www/documents:/var/www/run:/tmp%' \
-		-e 's%^;*post_max_size\s*=.*%post_max_size = 50M%' \
-		-e 's%^;*session\.cookie_samesite\s*=.*%session.cookie_samesite = Lax%' \
-		-e 's%^;*session\.save_path\s*=.*%session.save_path = /var/www/run%' \
-		-e 's%^;*session\.use_strict_mode\s*=.*%session.use_strict_mode = 1%' \
-		-e 's%^;*upload_max_filesize\s*=.*%upload_max_filesize = 50M%' \
-		/etc/php8/php.ini \
-	; \
-	sed -i \
-		-e 's%^#*LoadModule deflate_module %LoadModule deflate_module %' \
-		-e 's%^LoadModule autoindex_module %#LoadModule autoindex_module %' \
-		/etc/apache2/httpd.conf \
-	; \
-	echo \
-		'AddOutputFilterByType DEFLATE text/html text/plain text/json text/xml text/css text/javascript application/javascript' \
-		> /etc/apache2/conf.d/deflate.conf \
-	; \
-	install -d -o apache -g root -m 0750 /var/www/html; \
-	rm -rf /var/www/localhost/htdocs; \
-	ln -s /var/www/html /var/www/localhost/htdocs
+    apk add --no-cache \
+        bash \
+        openssl \
+        rsync \
+        apache2 \
+        php83 \
+        php83-apache2 \
+        php83-session \
+        php83-mysqli \
+        php83-pgsql \
+        php83-ldap \
+        php83-mbstring \
+        php83-intl \
+        php83-gd \
+        php83-imap \
+        php83-soap \
+        php83-curl \
+        php83-calendar \
+        php83-json \
+        php83-xml \
+        php83-xmlreader \
+        php83-xmlwriter \
+        php83-zip \
+        php83-tokenizer \
+        php83-simplexml \
+        php83-opcache \
+        php83-pdo \
+        php83-pdo_mysql \
+        php83-pdo_pgsql \
+        php83-pdo_sqlite \
+        php83-ctype \
+        php83-fileinfo \
+        mariadb-client \
+        postgresql-client \
+        unzip \
+        tzdata \
+    ; \
+    sed -i \
+        -e 's%^;*allow_url_fopen\s*=.*%allow_url_fopen = On%' \
+        -e 's%^;*disable_functions\s*=.*%disable_functions = pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,passthru,shell_exec,system,proc_open,popen%' \
+        -e 's%^;*max_execution_time\s*=.*%max_execution_time = 60%' \
+        -e 's%^;*memory_limit\s*=.*%memory_limit = 256M%' \
+        -e 's%^;*open_basedir\s*=.*%open_basedir = /var/www/html:/var/www/localhost/htdocs:/var/www/documents:/var/www/run:/tmp%' \
+        -e 's%^;*post_max_size\s*=.*%post_max_size = 50M%' \
+        -e 's%^;*session\.cookie_samesite\s*=.*%session.cookie_samesite = Lax%' \
+        -e 's%^;*session\.save_path\s*=.*%session.save_path = /var/www/run%' \
+        -e 's%^;*session\.use_strict_mode\s*=.*%session.use_strict_mode = 1%' \
+        -e 's%^;*upload_max_filesize\s*=.*%upload_max_filesize = 50M%' \
+        /etc/php83/php.ini \
+    ; \
+    sed -i \
+        -e 's%^#*LoadModule deflate_module %LoadModule deflate_module %' \
+        -e 's%^LoadModule autoindex_module %#LoadModule autoindex_module %' \
+        /etc/apache2/httpd.conf \
+    ; \
+    echo \
+        'AddOutputFilterByType DEFLATE text/html text/plain text/json text/xml text/css text/javascript application/javascript' \
+        > /etc/apache2/conf.d/deflate.conf \
+    ; \
+    install -d -o apache -g root -m 0750 /var/www/html; \
+    rm -rf /var/www/localhost/htdocs; \
+    ln -s /var/www/html /var/www/localhost/htdocs
 
 ENV DOLI_VERSION 21.0.1
 
@@ -114,13 +109,13 @@ VOLUME /var/www/html
 VOLUME /var/www/documents
 
 RUN set -eux; \
-	wget https://github.com/Dolibarr/dolibarr/archive/${DOLI_VERSION}.zip -O /tmp/dolibarr.zip; \
-	unzip -q /tmp/dolibarr.zip -d /tmp/dolibarr; \
-	rm -f /tmp/dolibarr.zip; \
-	mkdir -p /usr/src/dolibarr; \
-	cp -r /tmp/dolibarr/dolibarr-${DOLI_VERSION}/* /usr/src/dolibarr; \
-	rm -rf /tmp/dolibarr; \
-	chmod +x /usr/src/dolibarr/scripts/*
+    wget https://github.com/Dolibarr/dolibarr/archive/${DOLI_VERSION}.zip -O /tmp/dolibarr.zip; \
+    unzip -q /tmp/dolibarr.zip -d /tmp/dolibarr; \
+    rm -f /tmp/dolibarr.zip; \
+    mkdir -p /usr/src/dolibarr; \
+    cp -r /tmp/dolibarr/dolibarr-${DOLI_VERSION}/* /usr/src/dolibarr; \
+    rm -rf /tmp/dolibarr; \
+    chmod +x /usr/src/dolibarr/scripts/*
 
 WORKDIR /var/www/html
 
