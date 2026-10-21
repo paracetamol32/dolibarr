@@ -1,70 +1,90 @@
-FROM alpine:3.21
+# PHP 8.3.36 : correctif PHP2Shell (CVE-2026-109618 / CVE-2026-109619).
+# Variante bookworm : l'extension imap a besoin de libc-client (uw-imap), absent de Debian trixie.
+FROM php:8.3.36-apache-bookworm@sha256:28e0194d65d1c25ae279366137a027e2d8a835f1b37d8b96724a32c401ef99eb
 
 LABEL maintainer="dm@vecteur.it"
 
 RUN set -eux; \
-    apk add --no-cache \
-        bash \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
         openssl \
         rsync \
-        apache2 \
-        php83 \
-        php83-apache2 \
-        php83-session \
-        php83-mysqli \
-        php83-pgsql \
-        php83-ldap \
-        php83-mbstring \
-        php83-intl \
-        php83-gd \
-        php83-imap \
-        php83-soap \
-        php83-curl \
-        php83-calendar \
-        php83-json \
-        php83-xml \
-        php83-xmlreader \
-        php83-xmlwriter \
-        php83-zip \
-        php83-tokenizer \
-        php83-simplexml \
-        php83-opcache \
-        php83-pdo \
-        php83-pdo_mysql \
-        php83-pdo_pgsql \
-        php83-pdo_sqlite \
-        php83-ctype \
-        php83-fileinfo \
         mariadb-client \
         postgresql-client \
         unzip \
         tzdata \
     ; \
+    savedAptMark="$(apt-mark showmanual)"; \
+    apt-get install -y --no-install-recommends \
+        libc-client-dev \
+        libkrb5-dev \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libwebp-dev \
+        libicu-dev \
+        libldap2-dev \
+        libpq-dev \
+        libxml2-dev \
+        libzip-dev \
+    ; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-configure imap --with-kerberos --with-imap-ssl; \
+    docker-php-ext-configure ldap --with-libdir="lib/$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
+    docker-php-ext-install -j "$(nproc)" \
+        calendar \
+        gd \
+        imap \
+        intl \
+        ldap \
+        mysqli \
+        opcache \
+        pdo_mysql \
+        pdo_pgsql \
+        pgsql \
+        soap \
+        zip \
+    ; \
+# Ne garder que les bibliothèques d'exécution des extensions compilées
+    apt-mark auto '.*' > /dev/null; \
+    apt-mark manual $savedAptMark; \
+    extDir="$(php -r 'echo ini_get("extension_dir");')"; \
+    ldd "$extDir"/*.so \
+        | awk '/=>/ { so = $(NF-1); if (index(so, "/usr/local/") == 1) { next }; gsub("^/(usr/)?", "", so); printf "*%s\n", so }' \
+        | sort -u \
+        | xargs -r dpkg-query --search \
+        | cut -d: -f1 \
+        | sort -u \
+        | xargs -rt apt-mark manual; \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+    rm -rf /var/lib/apt/lists/*; \
+    ! { ldd "$extDir"/*.so | grep 'not found'; }; \
+    \
+    cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"; \
     sed -i \
         -e 's%^;*allow_url_fopen\s*=.*%allow_url_fopen = On%' \
         -e 's%^;*disable_functions\s*=.*%disable_functions = pcntl_alarm,pcntl_fork,pcntl_waitpid,pcntl_wait,pcntl_wifexited,pcntl_wifstopped,pcntl_wifsignaled,pcntl_wifcontinued,pcntl_wexitstatus,pcntl_wtermsig,pcntl_wstopsig,pcntl_signal,pcntl_signal_get_handler,pcntl_signal_dispatch,pcntl_get_last_error,pcntl_strerror,pcntl_sigprocmask,pcntl_sigwaitinfo,pcntl_sigtimedwait,pcntl_exec,pcntl_getpriority,pcntl_setpriority,pcntl_async_signals,passthru,shell_exec,system,proc_open,popen%' \
         -e 's%^;*max_execution_time\s*=.*%max_execution_time = 60%' \
         -e 's%^;*memory_limit\s*=.*%memory_limit = 256M%' \
-        -e 's%^;*open_basedir\s*=.*%open_basedir = /var/www/html:/var/www/localhost/htdocs:/var/www/documents:/var/www/run:/tmp%' \
+        -e 's%^;*open_basedir\s*=.*%open_basedir = /var/www/html:/var/www/documents:/var/www/run:/tmp%' \
         -e 's%^;*post_max_size\s*=.*%post_max_size = 50M%' \
         -e 's%^;*session\.cookie_samesite\s*=.*%session.cookie_samesite = Lax%' \
         -e 's%^;*session\.save_path\s*=.*%session.save_path = /var/www/run%' \
         -e 's%^;*session\.use_strict_mode\s*=.*%session.use_strict_mode = 1%' \
+        -e 's%^;*session\.upload_progress\.enabled\s*=.*%session.upload_progress.enabled = Off%' \
         -e 's%^;*upload_max_filesize\s*=.*%upload_max_filesize = 50M%' \
-        /etc/php83/php.ini \
+        "$PHP_INI_DIR/php.ini" \
     ; \
-    sed -i \
-        -e 's%^#*LoadModule deflate_module %LoadModule deflate_module %' \
-        -e 's%^LoadModule autoindex_module %#LoadModule autoindex_module %' \
-        /etc/apache2/httpd.conf \
-    ; \
+    a2enmod deflate; \
+    a2dismod -f autoindex; \
     echo \
         'AddOutputFilterByType DEFLATE text/html text/plain text/json text/xml text/css text/javascript application/javascript' \
-        > /etc/apache2/conf.d/deflate.conf \
+        > /etc/apache2/conf-available/dolibarr-deflate.conf \
     ; \
-    install -d -o apache -g root -m 0750 /var/www/html; \
-    rm -rf /var/www/localhost/htdocs; \
-    ln -s /var/www/html /var/www/localhost/htdocs
+    a2enconf dolibarr-deflate; \
+# Sessions PHP (sous Alpine, /var/www/run était un lien vers /run/apache2)
+    install -d -o www-data -g root -m 0770 /var/www/run; \
+    install -d -o www-data -g root -m 0750 /var/www/html
 
 ENV DOLI_VERSION 24.0.1
 
@@ -109,7 +129,7 @@ VOLUME /var/www/html
 VOLUME /var/www/documents
 
 RUN set -eux; \
-    wget https://github.com/Dolibarr/dolibarr/archive/${DOLI_VERSION}.zip -O /tmp/dolibarr.zip; \
+    curl -fsSL https://github.com/Dolibarr/dolibarr/archive/${DOLI_VERSION}.zip -o /tmp/dolibarr.zip; \
     unzip -q /tmp/dolibarr.zip -d /tmp/dolibarr; \
     rm -f /tmp/dolibarr.zip; \
     mkdir -p /usr/src/dolibarr; \
@@ -124,5 +144,5 @@ EXPOSE 80/tcp
 COPY /src/docker-entrypoint /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint"]
 
-COPY /src/apache2-foreground /usr/local/bin/
+# apache2-foreground fourni par l'image php officielle (lance apache2, pas httpd)
 CMD ["apache2-foreground"]
