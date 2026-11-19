@@ -1,6 +1,6 @@
-# PHP 8.3.36 : correctif PHP2Shell (CVE-2026-109618 / CVE-2026-109619).
+# PHP 8.3.37 : correctif du 2026-11-19 (session, FPM, RCE).
 # Variante bookworm : l'extension imap a besoin de libc-client (uw-imap), absent de Debian trixie.
-FROM php:8.3.36-apache-bookworm@sha256:28e0194d65d1c25ae279366137a027e2d8a835f1b37d8b96724a32c401ef99eb
+FROM php:8.3.37-apache-bookworm@sha256:39d083f7e0908f493d30f119654d555a4f7c225a3a7d4daec9df528ddf416bbc
 
 LABEL maintainer="dm@vecteur.it"
 
